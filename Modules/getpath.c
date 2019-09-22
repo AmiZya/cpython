@@ -1142,7 +1142,7 @@ calculate_init(PyCalculatePath *calculate,
         return DECODE_LOCALE_ERR("PREFIX define", len);
     }
     calculate->exec_prefix = Py_DecodeLocale(EXEC_PREFIX, &len);
-    if (!calculate->prefix) {
+    if (!calculate->exec_prefix) {
         return DECODE_LOCALE_ERR("EXEC_PREFIX define", len);
     }
     calculate->lib_python = Py_DecodeLocale("lib/python" VERSION, &len);
@@ -1213,10 +1213,12 @@ calculate_path_impl(const PyConfig *config,
                 "Consider setting $PYTHONHOME to <prefix>[:<exec_prefix>]\n");
     }
 
-    status = calculate_module_search_path(config, calculate,
-                                       prefix, exec_prefix, pathconfig);
-    if (_PyStatus_EXCEPTION(status)) {
-        return status;
+    if (pathconfig->module_search_path == NULL) {
+        status = calculate_module_search_path(config, calculate,
+                                              prefix, exec_prefix, pathconfig);
+        if (_PyStatus_EXCEPTION(status)) {
+            return status;
+        }
     }
 
     status = calculate_reduce_prefix(calculate, prefix, Py_ARRAY_LENGTH(prefix));
